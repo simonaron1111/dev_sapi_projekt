@@ -1,0 +1,10 @@
+FROM eclipse-temurin:21-jdk
+
+# Install Maven
+RUN apt-get update && apt-get install -y maven && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# Maven will compile and run at runtime via volume mount
+# This image just provides the Java and Maven environment
+

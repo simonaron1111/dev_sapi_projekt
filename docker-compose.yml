@@ -1,0 +1,92 @@
+version: '3.9'
+      
+services:
+  furniture_nginx:
+    build:
+      context: ./docker/nginx
+      dockerfile: Dockerfile
+    container_name: furniture_nginx
+    ports:
+      - "4080:4080"
+    depends_on:
+      - furniture_frontend
+      - furniture_backend
+    networks:
+      - furniturenet
+
+  furniture_frontend:
+    build:
+      context: .
+      dockerfile: ./docker/frontend/Dockerfile.dev
+    container_name: furniture_frontend
+    volumes:
+      - ./fe:/app
+      - /app/node_modules
+    ports:
+      - "4200:4200"
+    environment:
+      - CHOKIDAR_USEPOLLING=true 
+      - CHOKIDAR_INTERVAL=1000
+      - WATCHPACK_POLLING=true
+    networks:
+      - furniturenet
+
+  furniture_backend:
+    build:
+      context: .
+      dockerfile: ./docker/backend/Dockerfile.dev
+    container_name: furniture_backend
+    volumes:
+      - ./be:/app
+      - maven-cache:/root/.m2
+    ports:
+      - "8080:8080"
+      - "35729:35729"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://furniture_postgres:5432/furniture
+      - SPRING_DATASOURCE_USERNAME=sapi
+      - SPRING_DATASOURCE_PASSWORD=sapi
+      - SPRING_DATASOURCE_DRIVER_CLASS_NAME=org.postgresql.Driver
+      - SPRING_DEVTOOLS_RESTART_ENABLED=true
+      - SPRING_DEVTOOLS_LIVERELOAD_ENABLED=true
+      - SPRING_DEVTOOLS_RESTART_POLL_INTERVAL=1s
+      - SPRING_DEVTOOLS_RESTART_QUIET_PERIOD=400ms
+    command: >
+      sh -c "
+      mvn compile &&
+      touch target/classes/.watchfile &&
+      mvn spring-boot:run & 
+      SPRING_PID=$$! &&
+      while kill -0 $$SPRING_PID 2>/dev/null; do
+        sleep 2 &&
+        if find src/main/java src/main/resources -type f -newer target/classes/.watchfile 2>/dev/null | grep -q .; then
+          echo 'Changes detected, recompiling...' &&
+          mvn compile -q &&
+          touch target/classes/.watchfile &&
+          touch target/classes/.reloadtrigger
+        fi
+      done
+      "
+    depends_on:
+      - furniture_postgres
+    networks:
+      - furniturenet
+  furniture_postgres:
+    image: postgres:16
+    container_name: furniture_postgres
+    environment:
+      POSTGRES_USER: sapi
+      POSTGRES_PASSWORD: sapi
+      POSTGRES_DB: furniture
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./docker/postgres:/docker-entrypoint-initdb.d
+    networks:
+      - furniturenet
+
+volumes:
+  pgdata:
+  maven-cache:
+
+networks:
+  furniturenet:
