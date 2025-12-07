@@ -107,11 +107,7 @@ services:
       - maven-cache:/root/.m2
     environment:
       - SPRING_PROFILES_ACTIVE=eetest
-    command: >
-      sh -c "
-      mvn compile &&
-      mvn spring-boot:run -Dspring-boot.run.profiles=eetest
-      "
+    command: mvn spring-boot:run
     networks:
       - furniturenet_e2e
     profiles:
