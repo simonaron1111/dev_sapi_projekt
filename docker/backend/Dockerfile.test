@@ -1,0 +1,11 @@
+FROM eclipse-temurin:21-jdk
+
+# Install Maven
+RUN apt-get update && apt-get install -y maven && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# Default command runs all tests (unit + integration) matching Jenkinsfile
+# Unit tests: mvn -Dintegration-tests.skip=true clean package
+# Integration tests: mvn verify -Dunit-tests.skip=true
+CMD ["sh", "-c", "mvn -Dintegration-tests.skip=true clean package && mvn verify -Dunit-tests.skip=true"]

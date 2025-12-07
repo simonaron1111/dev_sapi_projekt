@@ -84,9 +84,72 @@ services:
     networks:
       - furniturenet
 
+  furniture_backend_test:
+    build:
+      context: .
+      dockerfile: ./docker/backend/Dockerfile.test
+    container_name: furniture_backend_test
+    volumes:
+      - ./be:/app
+      - maven-cache:/root/.m2
+    networks:
+      - furniturenet_test
+    profiles:
+      - test
+
+  furniture_backend_e2e:
+    build:
+      context: .
+      dockerfile: ./docker/backend/Dockerfile.dev
+    container_name: furniture_backend_e2e
+    volumes:
+      - ./be:/app
+      - maven-cache:/root/.m2
+    environment:
+      - SPRING_PROFILES_ACTIVE=eetest
+    command: >
+      sh -c "
+      mvn compile &&
+      mvn spring-boot:run -Dspring-boot.run.profiles=eetest
+      "
+    networks:
+      - furniturenet_e2e
+    profiles:
+      - e2e
+
+  furniture_frontend_e2e:
+    build:
+      context: .
+      dockerfile: ./docker/frontend/Dockerfile.e2e
+    container_name: furniture_frontend_e2e
+    volumes:
+      - ./fe:/app
+      - /app/node_modules
+    environment:
+      - BACKEND_HOST=furniture_backend_e2e
+      - BACKEND_PORT=8080
+      - CHROME_BIN=/usr/bin/chromium-browser
+    ports:
+      - "4201:4200"
+    command: >
+      sh -c "
+      npm install &&
+      cd furniture-e2e-tests &&
+      npm install &&
+      node run-e2e.js
+      "
+    depends_on:
+      - furniture_backend_e2e
+    networks:
+      - furniturenet_e2e
+    profiles:
+      - e2e
+
 volumes:
   pgdata:
   maven-cache:
 
 networks:
   furniturenet:
+  furniturenet_e2e:
+  furniturenet_test:
