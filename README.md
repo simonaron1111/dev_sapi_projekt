@@ -27,3 +27,8 @@ docker-compose --profile e2e up furniture_frontend_e2e
 ```bash
 docker-compose --profile test up furniture_backend_test
 ```
+
+## Run backend BDT tests
+```bash
+docker-compose --profile bdt up furniture_backend_bdt
+```
