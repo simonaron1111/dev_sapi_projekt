@@ -89,9 +89,12 @@ services:
       context: .
       dockerfile: ./docker/backend/Dockerfile.test
     container_name: furniture_backend_test
+    environment:
+      - SPRING_PROFILES_ACTIVE=test
     volumes:
       - ./be:/app
       - maven-cache:/root/.m2
+      - ./reports/backend:/app/reports
     networks:
       - furniturenet_test
     profiles:
@@ -121,11 +124,16 @@ services:
     volumes:
       - ./be:/app
       - maven-cache:/root/.m2
+      - ./reports/backend:/app/reports
     environment:
       - SPRING_PROFILES_ACTIVE=eetest
     command: >
       sh -c "
-      mvn test -Dtest=*BDD*Test -Dsurefire.excludes= -Dspring.profiles.active=eetest
+      mvn test -Dtest=*BDD*Test -Dsurefire.excludes= -Dspring.profiles.active=eetest &&
+      mkdir -p reports &&
+      cp -r target/surefire-reports reports/surefire 2>/dev/null || true &&
+      cp -r target/site/jacoco reports/jacoco 2>/dev/null || true &&
+      cp -r target/cucumber-reports reports/cucumber 2>/dev/null || true
       "
     networks:
       - furniturenet_test
@@ -141,6 +149,8 @@ services:
       - ./fe:/app
       - /app/node_modules
       - ./fe/furniture-e2e-tests/screenshots:/app/furniture-e2e-tests/screenshots
+      - ./reports/frontend/e2e:/app/furniture-e2e-tests/reports
+      - ./reports/frontend/coverage:/app/coverage
     environment:
       - BACKEND_HOST=furniture_backend_e2e
       - BACKEND_PORT=8080
