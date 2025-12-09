@@ -140,6 +140,7 @@ services:
     volumes:
       - ./fe:/app
       - /app/node_modules
+      - ./fe/furniture-e2e-tests/screenshots:/app/furniture-e2e-tests/screenshots
     environment:
       - BACKEND_HOST=furniture_backend_e2e
       - BACKEND_PORT=8080
@@ -151,7 +152,7 @@ services:
       npm install &&
       cd furniture-e2e-tests &&
       npm install &&
-      node run-e2e.js
+      node run-bdt.js
       "
     depends_on:
       - furniture_backend_e2e
