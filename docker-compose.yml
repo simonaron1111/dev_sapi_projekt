@@ -113,6 +113,25 @@ services:
     profiles:
       - e2e
 
+  furniture_backend_bdt:
+    build:
+      context: .
+      dockerfile: ./docker/backend/Dockerfile.dev
+    container_name: furniture_backend_bdt
+    volumes:
+      - ./be:/app
+      - maven-cache:/root/.m2
+    environment:
+      - SPRING_PROFILES_ACTIVE=eetest
+    command: >
+      sh -c "
+      mvn test -Dtest=*BDD*Test -Dsurefire.excludes= -Dspring.profiles.active=eetest
+      "
+    networks:
+      - furniturenet_test
+    profiles:
+      - bdt
+
   furniture_frontend_e2e:
     build:
       context: .
