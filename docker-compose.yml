@@ -171,6 +171,21 @@ services:
     profiles:
       - e2e
 
+  furniture_jmeter:
+    build:
+      context: ./docker/jmeter
+      dockerfile: Dockerfile
+    container_name: furniture_jmeter
+    volumes:
+      - ./jmeter/test-plans:/jmeter/test-plans
+      - ./jmeter/results:/jmeter/results
+    ports:
+      - "6001:6001"
+    networks:
+      - furniturenet
+    profiles:
+      - jmeter
+
 volumes:
   pgdata:
   maven-cache:

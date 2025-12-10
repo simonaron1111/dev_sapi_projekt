@@ -32,3 +32,12 @@ docker-compose --profile test up furniture_backend_test
 ```bash
 docker-compose --profile bdt up furniture_backend_bdt
 ```
+
+
+## Run Jmeter tests
+```bash
+docker-compose --profile jmeter up --build furniture_jmeter
+```
+
+## Access Jmeter reports
+Navigate to `http://localhost:6001` in your browser.
